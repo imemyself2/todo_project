@@ -40,6 +40,10 @@ func main() {
 			handleTags(todolist)
 		} else if inputArgs[0] == "projects" {
 			handleProjects(todolist)
+		} else if inputArgs[0] == "due" {
+			handleDue(todolist)
+		} else if inputArgs[0] == "extend" {
+			handleExtend(todolist, inputArgs)
 		}
 
 	}
@@ -100,7 +104,6 @@ func handlelscompleted(todolist todo.TaskList, inputArgs []string, resultRegex [
 			todolist = todolist.Filter(todo.FilterNotCompleted)
 			todolist.Sort(todo.SortPriorityAsc, todo.SortDueDateAsc, todo.SortCreatedDateAsc)
 		}
-		fmt.Println(todolist[0].Segments()[1])
 	} else {
 		// Check if matches any context
 		var isContextChanged bool = false
@@ -268,14 +271,15 @@ func handlelscompleted(todolist todo.TaskList, inputArgs []string, resultRegex [
 			}
 		}
 	}
-
+	var printComplete bool
+	var completedTasks todo.TaskList
+	var incomplete todo.TaskList
 	if hasCompleted && inputArgs[0] == "ls" {
 		// if it contains "completed"
+		printComplete = true
 		todolist.Sort(todo.SortPriorityAsc, todo.SortDueDateAsc, todo.SortCreatedDateAsc)
-		incomplete := todolist.Filter(todo.FilterNotCompleted)
-		fmt.Println(incomplete)
-		completedTasks := todolist.Filter(todo.FilterCompleted)
-		fmt.Println(completedTasks)
+		incomplete = todolist.Filter(todo.FilterNotCompleted)
+		completedTasks = todolist.Filter(todo.FilterCompleted)
 	} else {
 		if inputArgs[0] == "completed" {
 			todolist = todolist.Filter(todo.FilterCompleted)
@@ -321,7 +325,12 @@ func handlelscompleted(todolist todo.TaskList, inputArgs []string, resultRegex [
 			todolist.Sort(todo.SortProjectDesc)
 		}
 	}
-	fmt.Print(todolist)
+	if printComplete {
+		fmt.Println(incomplete)
+		fmt.Print(completedTasks)
+	} else {
+		fmt.Print(todolist)
+	}
 
 }
 
@@ -408,5 +417,56 @@ func handleProjects(todolist todo.TaskList) {
 
 	for project, _ := range projectMap {
 		fmt.Println(project)
+	}
+}
+
+func handleDue(todolist todo.TaskList) {
+	dueMap := make(map[string]int, 0)
+	var noDueDate int
+	for _, task := range todolist {
+		// defaultDate, _ := time.Parse("2006-01-02", "0001-01-01")
+		if task.HasDueDate() == false {
+
+			noDueDate++
+		} else {
+			timeFormatNew := task.DueDate.String()
+			timeFormatNew = timeFormatNew[:len(timeFormatNew)-19]
+			count := dueMap[timeFormatNew]
+			dueMap[timeFormatNew] = count + 1
+		}
+
+	}
+
+	for dueDate, dueCount := range dueMap {
+
+		fmt.Printf("%s\t%d\n", dueDate, dueCount)
+	}
+	fmt.Println(noDueDate)
+}
+
+func handleExtend(todolist todo.TaskList, inputArgs []string) {
+
+	taskID, _ := strconv.Atoi(inputArgs[1])
+	quantity, _ := strconv.Atoi(inputArgs[2])
+	unit := inputArgs[3]
+
+	task, _ := todolist.GetTask(taskID)
+
+	if task.HasDueDate() == false {
+		task.DueDate = time.Now()
+	}
+
+	if unit == "day" {
+		task.DueDate = task.DueDate.AddDate(0, 0, quantity)
+	} else if unit == "week" {
+		task.DueDate = task.DueDate.AddDate(0, 0, 7*quantity)
+	} else if unit == "month" {
+		task.DueDate = task.DueDate.AddDate(0, quantity, 0)
+	} else if unit == "year" {
+		task.DueDate = task.DueDate.AddDate(quantity, 0, 0)
+	}
+
+	if err := todo.WriteToPath(&todolist, "todo.txt"); err != nil {
+		log.Fatal(err)
 	}
 }
