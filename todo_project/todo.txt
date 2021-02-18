@@ -1,0 +1,12 @@
+(A) Call Mom @Phone +Family
+(A) Schedule annual checkup +Health
+(B) Outline chapter 5 @Computer +Novel
+(C) Add cover sheets @Office +TPSReports
+Plan backyard herb garden @Home missingInfo:NotIncluded
+Another Random tag line missingInfo:Included
+Plan backyard kids garden due:1999-02-19
+Pick up milk @GroceryStore
+Random tag line isImportant:Yes
+Research self-publishing services @Computer +Novel
+x Download Todo.txt mobile app @Phone hasTag:Yes
+(A) Complete Coding task @Jobs company:Periodic
