@@ -1,0 +1,6 @@
+[submodule "jedib0t/go-pretty"]
+	path = jedib0t/go-pretty
+	url = https://github.com/jedib0t/go-pretty
+[submodule "TwinProduction/go-color"]
+	path = TwinProduction/go-color
+	url = https://github.com/TwinProduction/go-color
