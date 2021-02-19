@@ -346,6 +346,7 @@ func handlelscompleted(todolist todo.TaskList, inputArgs []string, resultRegex [
 				fmt.Println(task.Original)
 			}
 		}
+		fmt.Println()
 		for _, task := range completedTasks {
 			if task.Priority == "A" {
 				fmt.Println(color.Ize(color.Yellow, task.Original))
@@ -361,11 +362,10 @@ func handlelscompleted(todolist todo.TaskList, inputArgs []string, resultRegex [
 				fmt.Println(task.Original)
 			}
 		}
-		// fmt.Println(incomplete)
-		// fmt.Print(completedTasks)
+
 		fmt.Printf("\nTOTAL:{%d}\n", len(incomplete)+len(completedTasks))
 	} else {
-		// fmt.Println(todolist)
+
 		for _, task := range todolist {
 			if task.Priority == "A" {
 				fmt.Println(color.Ize(color.Yellow, task.Original))
