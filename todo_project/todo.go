@@ -404,7 +404,6 @@ func FilterByAdditionalTags(todolist todo.TaskList, newTag string) todo.TaskList
 			}
 		}
 	}
-
 	return newTaskList
 }
 
@@ -450,7 +449,6 @@ func handleTags(todolist todo.TaskList) {
 			tagMap[tag] = 1
 		}
 	}
-
 	for tag, _ := range tagMap {
 		fmt.Println(tag)
 	}
