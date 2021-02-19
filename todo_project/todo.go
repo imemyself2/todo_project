@@ -6,9 +6,12 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	todo "github.com/1set/todotxt"
+	"github.com/TwinProduction/go-color"
+	"github.com/jedib0t/go-pretty/table"
 )
 
 func main() {
@@ -18,7 +21,6 @@ func main() {
 	if _, err := os.Stat("todo.txt"); os.IsNotExist(err) {
 		os.Create("todo.txt")
 	}
-
 	// Load and perform operations on the tasklist
 	if todolist, err := todo.LoadFromPath("todo.txt"); err != nil {
 		log.Fatal(err)
@@ -41,9 +43,11 @@ func main() {
 		} else if inputArgs[0] == "projects" {
 			handleProjects(todolist)
 		} else if inputArgs[0] == "due" {
-			handleDue(todolist)
+			handleDue(todolist, inputArgs)
 		} else if inputArgs[0] == "extend" {
 			handleExtend(todolist, inputArgs)
+		} else if inputArgs[0] == "help" {
+			handleHelp(inputArgs)
 		}
 
 	}
@@ -326,10 +330,58 @@ func handlelscompleted(todolist todo.TaskList, inputArgs []string, resultRegex [
 		}
 	}
 	if printComplete {
-		fmt.Println(incomplete)
-		fmt.Print(completedTasks)
+
+		for _, task := range incomplete {
+			if task.Priority == "A" {
+				fmt.Println(color.Ize(color.Yellow, task.Original))
+			} else if task.Priority == "B" {
+				fmt.Println(color.Ize(color.Red, task.Original))
+			} else if task.Priority == "C" {
+				fmt.Println(color.Ize(color.Green, task.Original))
+			} else if task.Priority == "D" {
+				fmt.Println(color.Ize(color.Cyan, task.Original))
+			} else if task.Priority == "E" {
+				fmt.Println(color.Ize(color.Blue, task.Original))
+			} else {
+				fmt.Println(task.Original)
+			}
+		}
+		for _, task := range completedTasks {
+			if task.Priority == "A" {
+				fmt.Println(color.Ize(color.Yellow, task.Original))
+			} else if task.Priority == "B" {
+				fmt.Println(color.Ize(color.Red, task.Original))
+			} else if task.Priority == "C" {
+				fmt.Println(color.Ize(color.Green, task.Original))
+			} else if task.Priority == "D" {
+				fmt.Println(color.Ize(color.Cyan, task.Original))
+			} else if task.Priority == "E" {
+				fmt.Println(color.Ize(color.Blue, task.Original))
+			} else {
+				fmt.Println(task.Original)
+			}
+		}
+		// fmt.Println(incomplete)
+		// fmt.Print(completedTasks)
+		fmt.Printf("\nTOTAL:{%d}\n", len(incomplete)+len(completedTasks))
 	} else {
-		fmt.Print(todolist)
+		// fmt.Println(todolist)
+		for _, task := range todolist {
+			if task.Priority == "A" {
+				fmt.Println(color.Ize(color.Yellow, task.Original))
+			} else if task.Priority == "B" {
+				fmt.Println(color.Ize(color.Red, task.Original))
+			} else if task.Priority == "C" {
+				fmt.Println(color.Ize(color.Green, task.Original))
+			} else if task.Priority == "D" {
+				fmt.Println(color.Ize(color.Cyan, task.Original))
+			} else if task.Priority == "E" {
+				fmt.Println(color.Ize(color.Blue, task.Original))
+			} else {
+				fmt.Println(task.Original)
+			}
+		}
+		fmt.Printf("TOTAL:{%d}\n", len(todolist))
 	}
 
 }
@@ -420,28 +472,100 @@ func handleProjects(todolist todo.TaskList) {
 	}
 }
 
-func handleDue(todolist todo.TaskList) {
-	dueMap := make(map[string]int, 0)
-	var noDueDate int
+func handleDue(todolist todo.TaskList, inputArgs []string) {
+	dueMap := make(map[string][]int, 0)
+	noDueDate := []int{0, 0}
+	var dueLessThan bool = false
+	var dueMoreThan bool = false
+	var dateConstraintLessThan time.Time
+	var dateConstraintMoreThan time.Time
+	if len(inputArgs) != 1 {
+
+		for _, param := range inputArgs {
+			if strings.HasPrefix(param, "<=") {
+				dueLessThan = true
+				dateConstraintLessThan, _ = time.Parse("2006-01-02", param[2:])
+			} else if strings.HasPrefix(param, ">=") {
+				dueMoreThan = true
+				dateConstraintMoreThan, _ = time.Parse("2006-01-02", param[2:])
+			}
+		}
+
+	}
 	for _, task := range todolist {
 		// defaultDate, _ := time.Parse("2006-01-02", "0001-01-01")
-		if task.HasDueDate() == false {
 
-			noDueDate++
+		if task.HasDueDate() == false {
+			if !task.IsCompleted() {
+				noDueDate[1]++
+			}
+			noDueDate[0]++
 		} else {
-			timeFormatNew := task.DueDate.String()
-			timeFormatNew = timeFormatNew[:len(timeFormatNew)-19]
-			count := dueMap[timeFormatNew]
-			dueMap[timeFormatNew] = count + 1
+			if dueLessThan && dueMoreThan {
+				if task.DueDate.After(dateConstraintMoreThan) && task.DueDate.Before(dateConstraintLessThan) {
+
+					timeFormatNew := task.DueDate.String()
+					timeFormatNew = timeFormatNew[:len(timeFormatNew)-19]
+					count := dueMap[timeFormatNew]
+					if len(count) == 0 {
+						count = []int{0, 0}
+					}
+					count[0] = count[0] + 1
+					if !task.IsCompleted() {
+						count[1] = count[1] + 1
+					}
+					dueMap[timeFormatNew] = count
+				}
+			} else if dueLessThan {
+				if task.DueDate.Before(dateConstraintLessThan) {
+					timeFormatNew := task.DueDate.String()
+					timeFormatNew = timeFormatNew[:len(timeFormatNew)-19]
+					count := dueMap[timeFormatNew]
+					if len(count) == 0 {
+						count = []int{0, 0}
+					}
+					count[0] = count[0] + 1
+					if !task.IsCompleted() {
+						count[1] = count[1] + 1
+					}
+					dueMap[timeFormatNew] = count
+				}
+			} else if dueMoreThan {
+				if task.DueDate.After(dateConstraintMoreThan) {
+					timeFormatNew := task.DueDate.String()
+					timeFormatNew = timeFormatNew[:len(timeFormatNew)-19]
+					count := dueMap[timeFormatNew]
+					if len(count) == 0 {
+						count = []int{0, 0}
+					}
+					count[0] = count[0] + 1
+					if !task.IsCompleted() {
+						count[1] = count[1] + 1
+					}
+					dueMap[timeFormatNew] = count
+				}
+			} else {
+				timeFormatNew := task.DueDate.String()
+				timeFormatNew = timeFormatNew[:len(timeFormatNew)-19]
+				count := dueMap[timeFormatNew]
+				if len(count) == 0 {
+					count = []int{0, 0}
+				}
+				count[0] = count[0] + 1
+				if !task.IsCompleted() {
+					count[1] = count[1] + 1
+				}
+				dueMap[timeFormatNew] = count
+			}
 		}
 
 	}
 
 	for dueDate, dueCount := range dueMap {
 
-		fmt.Printf("%s\t%d\n", dueDate, dueCount)
+		fmt.Printf("%s\t%d (%d)\n", dueDate, dueCount[0], dueCount[1])
 	}
-	fmt.Println(noDueDate)
+	fmt.Printf("%d (%d)\n", noDueDate[0], noDueDate[1])
 }
 
 func handleExtend(todolist todo.TaskList, inputArgs []string) {
@@ -469,4 +593,24 @@ func handleExtend(todolist todo.TaskList, inputArgs []string) {
 	if err := todo.WriteToPath(&todolist, "todo.txt"); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func handleHelp(inputArgs []string) {
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"Command", "Description"})
+	t.AppendRows([]table.Row{
+		{"ls <options>", "Display the entire todo list. Options include @context, +project, (priority), tag:, <>datestring, |order, completed"},
+		{"completed <(><)datestring>", "Show only the completed tasks"},
+		{"add <task>", "Add a new task"},
+		{"rm <taskID>", "Remove a task with the given ID"},
+		{"do <taskID>", "Mark the task as completed"},
+		{"tags", "Display all the unique tags"},
+		{"projects", "Display all the unique projects"},
+		{"due <options>", "Display all the unique due dates along with the number of projects due and the projects that remain incomplete to that day."},
+		{"extend <taskID> <quantity> <unit>", "Extend the due date of a task by the given quantity. The units available are day, week, month, year"},
+	})
+
+	t.SetStyle(table.StyleColoredYellowWhiteOnBlack)
+	t.Render()
 }
