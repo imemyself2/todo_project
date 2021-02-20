@@ -6,6 +6,7 @@ import (
 	"os"
 
 	todo "github.com/1set/todotxt"
+	cors "github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,11 +14,14 @@ func main() {
 
 	loginInfo := make(map[string]string)
 	todoInfo := make(map[string]todo.TaskList)
-
+	port := os.Getenv("PORT")
 	// Test ID
 	loginInfo["sample"] = "helloworld123"
 
 	router := gin.Default()
+
+	router.Use(cors.Default())
+
 	router.GET("/login", func(c *gin.Context) {
 		username := c.Query("username")
 		password := c.Query("password")
@@ -75,5 +79,10 @@ func main() {
 	router.POST("/rm", func(c *gin.Context) {
 
 	})
-	router.Run(os.Getenv("PORT"))
+
+	router.Run(":" + port)
+}
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
