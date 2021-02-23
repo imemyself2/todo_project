@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:ui/login.dart';
+
 void main() {
   runApp(Todo());
 }
@@ -15,7 +17,7 @@ class Todo extends StatelessWidget {
     return MaterialApp(
       title: 'MyTodo',
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: Login(),
     );
   }
 }
@@ -94,27 +96,6 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                    ),
-                  // child: AnimatedList(
-                  //   initialItemCount: incomplete.length-1,
-                  //   itemBuilder: (context, index, animation){
-                  //     return SlideTransition(
-                  //       position: animation.drive(Tween<Offset>(begin: Offset(-1, 0), end: Offset(0, 0))),
-                  //       child: Card(
-                  //       margin: EdgeInsets.all(5),
-                  //       clipBehavior: Clip.antiAlias,
-                  //       color: tiles,
-                  //       elevation: 3,
-                  //       child: ListTile(
-                  //         contentPadding: EdgeInsets.symmetric(vertical: 7.5, horizontal: 20),
-                  //         title: Text(incomplete[index], style: TextStyle(color: listText),),
-                  //       ),
-                  //       shape: StadiumBorder(
-                          
-                  //       ),
-                  //     )
-                  //     );
-                  //   },
-                  // ),
                 );
               }
               else {
@@ -128,7 +109,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: appBarCol,
         title: Text("MyTodo"),
         centerTitle: true,
-      )
+      ),
     );
   }
 }
